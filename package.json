@@ -25,7 +25,8 @@
   "devDependencies": {
     "seneca": "~0.5.7",
     "chai": "~1.6.0",
-    "express": "~3.2.5"
+    "express": "~3.2.5",
+    "gex": "~0.1.1"
   },
   "files": [
     "README.md",
