@@ -1,5 +1,10 @@
 .gridStyle {
-    border: 1px solid rgb(212,212,212);
-    width: 400px; 
-    height: 300px
+    xborder: 1px solid rgb(212,212,212);
+    xwidth: 400px; 
+  height: 300px
+}
+
+
+.row {
+  margin-bottom: 20px;
 }

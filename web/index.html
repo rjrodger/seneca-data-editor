@@ -52,28 +52,25 @@
 
     <div class="container">
 
-
-      <div class="btn-group" ng-controller="ToolBar">
+    <div class="row">
+      <div class="btn-group span12" ng-controller="ToolBar">
         <button class="btn" ng-click="showEnts()">Entity</button>
       </div>
+    </div>
 
-      <div ng-controller="Table">
-        <div class="gridStyle" ng-grid="gridOptions"></div>
-
-        
-
-<!--
-        <ul>
-          <li ng-repeat="ent in entlist">
-            <span>{{ent.zone}}/{{ent.base}}/{{ent.name}}</span>
-          </li>
-        </ul>
--->
-
+    <div class="row">
+      <div ng-controller="Table" class="span12">
+        <div class="gridStyle clearfix" ng-grid="gridOptions"></div>
       </div>
+    </div>
 
+    <div class="row">
+      <div ng-controller="Detail" ng-hide="virgin" class="span12">
+        detail {{item}}
+      </div>
+    </div>
 
-    </div> <!-- /container -->
+    </div>
 
     <!-- Le javascript
     ================================================== -->

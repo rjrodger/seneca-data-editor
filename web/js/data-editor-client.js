@@ -103,15 +103,16 @@
     $scope.gridOptions = { 
       data: 'data',
       columnDefs: 'coldefs',
+      enableHighlighting: true,
       beforeSelectionChange: function(row) {
-        //console.dir(row)
-        //var item = $scope.data[row.rowIndex]
-        //$scope.list([item.zone,item.base,item.name].join('_'))
+        var item = $scope.data[row.rowIndex]
+        pubsub.publish('view',['detail',$scope.kind,item])
       }
     }
 
     $scope.list = function(kind) {
       entity.list(kind,{},function(err,res){
+        $scope.kind = kind
         $scope.coldefs = res.fields
         $scope.data = res.list
       })
@@ -130,6 +131,25 @@
     $scope.list('sys_entity')
   })
 
+
+
+  de.controller('Detail', function($scope, pubsub) {
+
+    $scope.virgin = true
+    $scope.kind = 'none'
+
+    $scope.show = function(kind,item) {
+      $scope.virgin = false
+      $scope.kind = kind
+      $scope.item = item
+    }
+
+    pubsub.subscribe('view',function(view,kind,item){
+      if( 'detail' != view ) return;
+      $scope.show(kind,item)
+    })
+
+  })
 
 
 })();
