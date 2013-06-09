@@ -60,12 +60,20 @@
       'sys_entity': function(kind,query,done) {
         $http({method: 'GET', url: '/data-editor/entlist', cache: false}).
           success(function(data, status) {
+            var entlist = data.entlist
+            entlist = _.map(entlist,function(ent){
+              ent.action$ = 'open'
+              return ent
+            })
             done(null,{
               list:data.entlist,
               fields:[
-                {field:'zone',},
-                {field:'base'},
-                {field:'name'}
+                {field:'action$',displayName:'Action',
+                 cellTemplate: '<button ng-click="onAction(\'open\',row)" class="btn btn-primary btn-small">Open</button>'
+                },
+                {field:'zone',displayName:'Zone'},
+                {field:'base',displayName:'Base'},
+                {field:'name',displayName:'Name'}
               ]
             })
           })
@@ -96,23 +104,28 @@
       data: 'data',
       columnDefs: 'coldefs',
       beforeSelectionChange: function(row) {
-        var item = $scope.data[row.rowIndex]
-        $scope.list([item.zone,item.base,item.name].join('_'))
+        //console.dir(row)
+        //var item = $scope.data[row.rowIndex]
+        //$scope.list([item.zone,item.base,item.name].join('_'))
       }
     }
 
     $scope.list = function(kind) {
       entity.list(kind,{},function(err,res){
-        console.dir(res)
         $scope.coldefs = res.fields
         $scope.data = res.list
       })
     }
 
+    $scope.onAction = function(name,row) {
+      console.log('onA',name,row)
+      var item = $scope.data[row.rowIndex]
+      $scope.list([item.zone,item.base,item.name].join('_'))
+    }
+
     pubsub.subscribe('view',function(view){
       if( 'ents' == view ) $scope.list('sys_entity');
     })
-
 
     $scope.list('sys_entity')
   })
