@@ -5,7 +5,6 @@
 var express = require('express')
 
 var seneca  = require('seneca')()
-seneca.use('jsonrest-api')
 seneca.use('..')
 
 

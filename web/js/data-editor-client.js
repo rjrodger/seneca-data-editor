@@ -7,7 +7,7 @@
 
   var de = Seneca.data_editor = angular.module('data_editor',['ngGrid'])
 
-  de.factory('pubsub', function() {
+  de.service('pubsub', function() {
     var cache = {};
     return {
       publish: function(topic, args) { 
@@ -36,6 +36,51 @@
   });
 
 
+  de.service('entity', function($http) {
+    var listfunc = {
+      '*':function(kind,query,done){
+        $http({method: 'GET', url: '/data-editor/rest/'+kind, cache: false}).
+          success(function(data, status) {
+            var fields = []
+
+            _.each(data.list,function(row){
+              _.each(row,function(v,k){fields[k]=1})
+            })
+            fields = _.keys(_.omit(fields,['$'])).sort()
+            fields = _.map(fields,function(field){
+              return {field:field}
+            })
+
+            done(null,{
+              list:data.list,
+              fields:fields
+            })
+          })
+      },
+      'sys_entity': function(kind,query,done) {
+        $http({method: 'GET', url: '/data-editor/entlist', cache: false}).
+          success(function(data, status) {
+            done(null,{
+              list:data.entlist,
+              fields:[
+                {field:'zone',},
+                {field:'base'},
+                {field:'name'}
+              ]
+            })
+          })
+      }
+    }
+
+    return {
+      list: function(kind,query,done){
+        var f = listfunc[kind] ? listfunc[kind] : listfunc['*'] 
+        f(kind,query,done)
+      }
+    }
+  })
+
+
   de.controller('ToolBar', function($scope, pubsub) {
     $scope.showEnts = function(){
       pubsub.publish('view',['ents'])
@@ -43,45 +88,33 @@
   })
 
 
-  de.controller('Entity', function($scope, $http, pubsub) {
+  de.controller('Table', function($scope, $http, pubsub, entity) {
 
     $scope.data = []
 
     $scope.gridOptions = { 
       data: 'data',
       columnDefs: 'coldefs',
-      beforeSelectionChange: function(item) {
-        console.log(item.rowIndex)
-        $scope.coldefs = [
-          {field:'a'},
-        ]
-        $scope.data = [{a:1},{a:2}]
+      beforeSelectionChange: function(row) {
+        var item = $scope.data[row.rowIndex]
+        $scope.list([item.zone,item.base,item.name].join('_'))
       }
     }
 
-    $scope.showEnts = function() {
-      $scope.coldefs = [
-        {field:'zone',},
-        {field:'base'},
-        {field:'name'}
-      ]
-      $scope.data = $scope.entlist
-    }
-
-    $scope.loadEnts = function() {
-      $http({method: 'GET', url: '/data-editor/entlist', cache: false}).
-        success(function(data, status) {
-          $scope.entlist = data.entlist
-          $scope.showEnts()
-        })
+    $scope.list = function(kind) {
+      entity.list(kind,{},function(err,res){
+        console.dir(res)
+        $scope.coldefs = res.fields
+        $scope.data = res.list
+      })
     }
 
     pubsub.subscribe('view',function(view){
-      if( 'ents' == view ) $scope.showEnts();
+      if( 'ents' == view ) $scope.list('sys_entity');
     })
 
 
-    $scope.loadEnts()
+    $scope.list('sys_entity')
   })
 
 
