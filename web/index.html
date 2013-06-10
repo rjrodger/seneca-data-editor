@@ -7,13 +7,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <!-- Le styles -->
     <link href="css/bootstrap.css" rel="stylesheet">
-    <style>
-      body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
-      }
-    </style>
     <link href="css/bootstrap-responsive.css" rel="stylesheet">
     <link href="css/ng-grid.css" rel="stylesheet">
     <link href="css/data-editor-style.css" rel="stylesheet">
@@ -64,38 +58,65 @@
       </div>
     </div>
 
+
     <div class="row">
-      <div ng-controller="Detail" ng-hide="virgin" class="span12">
-        detail {{item}}
+      <div ng-controller="Detail" ng-show="visible" class="span12">
+
+      <form class="form-horizontal">
+        <div class="control-group">
+          <button ng-click="newItem()" class="btn">New</button>
+        </div>
+
+        <div id="ent-fields">
+
+          <div class="control-group">
+            <label class="control-label">{{kind}}</label>
+            <div class="controls">
+              {{ident}}
+            </div>
+          </div>
+
+          <div ng-repeat="field in fields" class="control-group">
+            <label class="control-label">{{field.name}}</label>
+            <div class="controls">
+              <input ng-show="editable" type="text" value="{{field.value}}">
+              <span ng-hide="editable">{{field.value}}</span>
+            </div>
+          </div>
+        </div>
+
+<!--
+        <div class="control-group ent-new-field" style="background-color:#666">
+          <label class="control-label">New Field Name</label>
+          <div class="controls">
+            <input id="ent-new-field-name" type="text">
+          </div>
+        </div>
+
+        <div class="control-group ent-new-field" style="background-color:#666">
+          <label class="control-label">New Field Value</label>
+          <div class="controls">
+            <input id="ent-new-field-value" type="text">
+          </div>
+        </div>
+-->
+
+        <div class="control-group">
+          <button ng-click="saveItem()" ng-show="editable" class="btn">Save</button>
+          <button ng-click="closeItem()" class="btn">Close</button>
+        </div>
+      </form>
+
       </div>
     </div>
 
     </div>
 
-    <!-- Le javascript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
 
     <script src="js/underscore-1.4.4.min.js"></script>
     <script src="js/jquery-2.0.0.js"></script>
     <script src="js/angular.js"></script>
     <script src="js/ng-grid-2.0.6.min.js"></script>
     <script src="js/data-editor-client.js"></script>
-
-<!--
-    <script src="js/jquery.js"></script>
-    <script src="js/bootstrap-transition.js"></script>
-    <script src="js/bootstrap-alert.js"></script>
-    <script src="js/bootstrap-modal.js"></script>
-    <script src="js/bootstrap-dropdown.js"></script>
-    <script src="js/bootstrap-scrollspy.js"></script>
-    <script src="js/bootstrap-tab.js"></script>
-    <script src="js/bootstrap-tooltip.js"></script>
-    <script src="js/bootstrap-popover.js"></script>
-    <script src="js/bootstrap-button.js"></script>
-    <script src="js/bootstrap-collapse.js"></script>
-    <script src="js/bootstrap-carousel.js"></script>
-    <script src="js/bootstrap-typeahead.js"></script>
--->
   </body>
 </html>

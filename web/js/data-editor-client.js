@@ -133,15 +133,41 @@
 
 
 
-  de.controller('Detail', function($scope, pubsub) {
+  de.controller('Detail', function($scope, pubsub, entity) {
 
-    $scope.virgin = true
+    $scope.visible = false
     $scope.kind = 'none'
 
+    $scope.fields = []
+
     $scope.show = function(kind,item) {
-      $scope.virgin = false
+      $scope.visible = true
       $scope.kind = kind
       $scope.item = item
+      $scope.ident = item.id
+
+      $scope.editable = 'sys_entity' != kind
+
+      var fields = []
+
+      _.each(item,function(v,k){
+        if( '$'==k || 'id'==k || ~k.indexOf('$')) return;
+        fields.push( {name:k,value:v} )
+      })
+
+      $scope.fields = fields
+    }
+
+    $scope.newItem = function() {
+      console.log('newItem')
+    }
+
+    $scope.saveItem = function() {
+      console.log('newItem')
+    }
+
+    $scope.closeItem = function() {
+      $scope.visible = false
     }
 
     pubsub.subscribe('view',function(view,kind,item){
