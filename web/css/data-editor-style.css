@@ -15,7 +15,6 @@ body {
   margin-bottom: 20px;
 }
 
-
-.xhidden {
-  display: none;
+.msg {
+    height: 30px;
 }

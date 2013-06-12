@@ -52,14 +52,14 @@
       </div>
     </div>
 
-    <div class="row">
+    <div class="row" ng-cloak>
       <div ng-controller="Table" class="span12">
         <div class="gridStyle clearfix" ng-grid="gridOptions"></div>
       </div>
     </div>
 
 
-    <div class="row">
+    <div class="row" ng-cloak>
       <div ng-controller="Detail" ng-show="visible" class="span12">
 
       <form class="form-horizontal">
@@ -79,7 +79,7 @@
           <div ng-repeat="field in fields" class="control-group">
             <label class="control-label">{{field.name}}</label>
             <div class="controls">
-              <input ng-show="editable" type="text" value="{{field.value}}">
+              <input ng-show="editable" type="text" ng-model="changes[field.name]">
               <span ng-hide="editable">{{field.value}}</span>
             </div>
           </div>
@@ -100,6 +100,10 @@
           </div>
         </div>
 -->
+
+       <div class="msg">
+         <div ng-show="''!=msg">{{msg}}</div>
+       </div>
 
         <div class="control-group">
           <button ng-click="saveItem()" ng-show="editable" class="btn">Save</button>
