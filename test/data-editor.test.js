@@ -79,26 +79,26 @@ describe('data-editor', function() {
 
             var user = {access:{name:'a'}}
 
-            si.act('role:data-editor,cmd:entlist',{user:user},function(err,list){
+            si.act('role:data-editor,cmd:entlist',{user:user},function(err,out){
               if( err ) return done(err);
 
-              console.dir(list)
+              console.dir(out)
 
 
               user = {access:{base:'A'}}
               
-              si.act('role:data-editor,cmd:entlist',{user:user},function(err,list){
+              si.act('role:data-editor,cmd:entlist',{user:user},function(err,out){
                 if( err ) return done(err);
 
-                console.dir(list)
+                console.dir(out)
                 
 
                 user = {access:{base:'B',list:[{base:'sys',name:'user'},{name:'a'}]}}
               
-                si.act('role:data-editor,cmd:entlist',{user:user},function(err,list){
+                si.act('role:data-editor,cmd:entlist',{user:user},function(err,out){
                   if( err ) return done(err);
 
-                  console.dir(list)
+                  console.dir(out)
 
                   done()
                 })
