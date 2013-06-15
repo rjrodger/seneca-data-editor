@@ -10,7 +10,8 @@ var seneca  = require('seneca')
 
 var assert  = require('chai').assert
 
-var gex = require('gex')
+var gex  = require('gex')
+var tagx = require('tagx')
 
 
 
@@ -28,6 +29,9 @@ describe('data-editor', function() {
       .use('..')
       .ready( function(err,si){ 
         assert.isNull(err)
+
+        console.log(tagx("a b c"))
+
         done()
       })
   })

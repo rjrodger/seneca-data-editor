@@ -2,8 +2,9 @@
 
 
 ;(function(){
-
-  var Seneca = window.Seneca = window.Seneca || {}
+  var config = Seneca.config.data_editor
+  var tagmap = {}
+  _.each(config.tags, function(tag){ tagmap[tag]=1 })
 
   var de = Seneca.data_editor = angular.module('data_editor',['ngGrid'])
 
@@ -65,17 +66,25 @@
               ent.action$ = 'open'
               return ent
             })
-            done(null,{
+
+            var out = {
               list:data.entlist,
               fields:[
-                {field:'action$',displayName:'Action',
+                {field:'action$',displayName:'Action',width:100,maxWidth:100,
                  cellTemplate: '<button ng-click="onAction(\'open\',row)" class="btn btn-primary btn-small">Open</button>'
                 },
-                {field:'zone',displayName:'Zone'},
-                {field:'base',displayName:'Base'},
-                {field:'name',displayName:'Name'}
               ]
-            })
+            }
+
+            if( tagmap.entzone ) {
+              out.fields.push( {field:'zone',displayName:'Zone'} )
+            }
+            if( tagmap.entbase ) {
+              out.fields.push( {field:'base',displayName:'Base'} )
+            }
+            out.fields.push( {field:'name',displayName:'Name'} )
+      
+            done(null,out)
           })
       }
     }
