@@ -30,13 +30,18 @@ app.listen( 3000 )
 var userpin = seneca.pin({role:'user',cmd:'*'}) 
 userpin.register({nick:'a1',name:'a1',pass:'a1',admin:true})
 
+
+userpin.register({nick:'x1',name:'x1',pass:'x1'})
+
+
 userpin.register({nick:'u1',name:'u1',pass:'u1',
                   access:{list:[
                     {zone:'z1',base:'b1'},
                     {zone:'z1',base:'b2'}
                   ]},
                   perm:{entity:[
-                    {zone:'z1',base:'b1',perm$:'cr'}
+                    {zone:'z1',base:'b1',perm$:'cr'},
+                    {zone:'z1',base:'b2',perm$:'crudq'}
                   ]}})
 
 
