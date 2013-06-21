@@ -10,6 +10,8 @@
     <link href="css/bootstrap.css" rel="stylesheet">
     <link href="css/bootstrap-responsive.css" rel="stylesheet">
     <link href="css/ng-grid.css" rel="stylesheet">
+    <link href="css/jsoneditor.css" rel="stylesheet">
+
     <link href="css/data-editor-style.css" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -50,12 +52,14 @@
 
     <div class="row">
       <div class="btn-group span12" ng-controller="ToolBar">
-        <button class="btn" ng-click="showEnts()">Entity</button>
+        <button ng-click="showEnts()" class="btn">Entity</button>
+        <button ng-click="newItem()" ng-disabled="!newbtn" class="btn">New</button>
       </div>
     </div>
 
     <div class="row" ng-cloak>
       <div ng-controller="Table" class="span12">
+        <h3>{{kind}}</h3>
         <div class="gridStyle clearfix" ng-grid="gridOptions"></div>
       </div>
     </div>
@@ -65,10 +69,6 @@
       <div ng-controller="Detail" ng-show="visible" class="span12">
 
       <form class="form-horizontal">
-        <div class="control-group">
-          <button ng-click="newItem()" class="btn">New</button>
-        </div>
-
         <div id="ent-fields">
 
           <div class="control-group">
@@ -80,10 +80,32 @@
 
           <div ng-repeat="field in fields" class="control-group">
             <label class="control-label">{{field.name}}</label>
-            <div class="controls">
-              <input ng-show="editable" type="text" ng-model="changes[field.name]">
-              <span ng-hide="editable">{{field.value}}</span>
+            <div ng-show="editable" ng-switch="field.type" class="controls">
+              <input
+                 ng-switch-when="checkbox"
+                 type="checkbox" 
+                 style="width:{{field.width}}px;" 
+                 ng-model="changes[field.name]"
+                 >
+
+              <div ng-switch-when="json" id="seneca-jsoneditor-field-{{field.name}}" class="json-editor"></div>
+
+              <span ng-switch-when="fixed">{{field.value}}</span>
+
+              <textarea
+                 ng-switch-when="textarea"
+                 style="width:{{field.width}}px;height:{{field.height}}px;" 
+                 ng-model="changes[field.name]"
+                 >{{field.value}}</textarea>
+
+              <input 
+                 ng-switch-default
+                 type="{{field.type}}" 
+                 style="width:{{field.width}}px;" 
+                 ng-model="changes[field.name]"
+                 >
             </div>
+            <span ng-hide="editable">{{field.value}}</span>
           </div>
         </div>
 
@@ -116,6 +138,7 @@
       </div>
     </div>
 
+
     </div>
 
 
@@ -123,6 +146,7 @@
     <script src="js/jquery-2.0.0.js"></script>
     <script src="js/angular.js"></script>
     <script src="js/ng-grid-2.0.6.min.js"></script>
+    <script src="js/jquery.jsoneditor.js"></script>
     <script src="js/data-editor-client.js"></script>
   </body>
 </html>
