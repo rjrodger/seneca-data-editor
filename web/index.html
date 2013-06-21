@@ -50,10 +50,22 @@
 
     <div class="container">
 
-    <div class="row">
-      <div class="btn-group span12" ng-controller="ToolBar">
+    <div class="row" ng-controller="ToolBar">
+      <div class="btn-group span12">
         <button ng-click="showEnts()" class="btn">Entity</button>
-        <button ng-click="newItem()" ng-disabled="!newbtn" class="btn">New</button>
+        <button ng-click="newItem()"   ng-disabled="!newbtn" class="btn">New</button>
+        <button ng-click="toggleQuery()" ng-disabled="!querybtn"  class="btn">Query</button>
+      </div>
+      <div ng-show="queryvisible" class="well span10">
+        sort: <select ng-model="qsort" ng-options="f.name for f in fields"></select>
+        <select ng-model="qdirection" ng-options="n for n in ['ascend','descend']"></select>
+        <br>
+        field: <select ng-model="qfield" ng-options="f.name for f in fields"></select>
+        =
+        <input ng-model="qstring">
+        <br>
+        <button ng-click="search()" class="btn">Search</button>
+        <button ng-click="clear()" class="btn">Clear</button>
       </div>
     </div>
 
@@ -145,7 +157,7 @@
     <script src="js/underscore-1.4.4.min.js"></script>
     <script src="js/jquery-2.0.0.js"></script>
     <script src="js/angular.js"></script>
-    <script src="js/ng-grid-2.0.6.min.js"></script>
+    <script src="js/ng-grid-2.0.6.debug.js"></script>
     <script src="js/jquery.jsoneditor.js"></script>
     <script src="js/data-editor-client.js"></script>
   </body>

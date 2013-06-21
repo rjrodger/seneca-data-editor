@@ -71,16 +71,28 @@
 
     var listfunc = {
       '*':function(kind,query,done){
-        $http({method: 'GET', url: '/data-editor/rest/'+kind, cache: false}).
+        var qstr = 
+              '?skip='+query.skip$ +
+              '&limit='+query.limit$
+
+        if(query.sort) {
+          qstr += '&sort='+query.sort
+        }
+
+        if(query.q) {
+          qstr += '&q='+query.q
+        }
+
+        $http({method: 'GET', url: '/data-editor/rest/'+kind+qstr, cache: false}).
           success(function(data, status) {
             var srcfields = []
 
 
             // set up fields predefined from entlist
             var ent = entmap[kind]
-            ent = ent || {}
-            ent.fields = ent.fields || []
-
+            if( !ent ) {
+              ent = {fields:{}}
+            }
 
             var entfieldmap = makefieldmap(kind,ent)
 
@@ -92,6 +104,7 @@
               _.each(row,function(v,k){
                 foundfields[k]=1
                 var entfield = entfieldmap[k]=entfieldmap[k]||{}
+                entfield.name=k
                 if( _.isObject(v) ) {
                   entfield.complex=true 
                 }
@@ -217,8 +230,9 @@
   })
 
 
-  de.controller('ToolBar', function($scope, pubsub) {
-    $scope.newbtn = false // 'sys_entity' != kind
+  de.controller('ToolBar', function($scope, pubsub, entity) {
+    $scope.newbtn = false 
+    $scope.queryvisible = false
 
     $scope.showEnts = function(){
       pubsub.publish('view',['ents'])
@@ -228,22 +242,102 @@
       pubsub.publish('view',['detail',$scope.kind])
     }
 
+    $scope.toggleQuery = function() {
+      $scope.queryvisible = !$scope.queryvisible
+    }
+
+    $scope.search = function() { 
+      var qfield  = $scope.qfield && $scope.qfield.name || undefined
+      var qstring = $scope.qstring
+
+      var sort  = $scope.qsort && $scope.qsort.name || null
+      var ascend  = 'ascend' == $scope.qdirection || void 0 == $scope.qdirection
+
+      var q = []
+      if( void 0!=qfield && void 0 !=qstring && 0 < qfield.length && 0 < qstring.length ) {
+        q = [{field:qfield,search:qstring}]
+      }
+
+      pubsub.publish('search',[q,sort,ascend])
+    }
+
+
+    $scope.clear = function() { 
+      $scope.qstring = ''
+      pubsub.publish('search',[[]])
+    }
+
     pubsub.subscribe('kind',function(kind){
-      $scope.kind = kind
       $scope.newbtn = 'sys_entity' != kind
+      $scope.querybtn = 'sys_entity' != kind
+    })
+
+    pubsub.subscribe('listed',function(kind){
+      if( kind != $scope.kind ) {
+        $scope.kind = kind
+        var fieldmap = entity.fieldmap(kind)
+
+        var fieldnames = _.filter(_.keys(fieldmap),function(k){return -1==k.indexOf('$')}).sort()
+        if(_.contains(fieldnames['id'])){_.remove(fieldnames,'id'); fieldnames=fieldnames.unshift('id')}
+        var fields = _.map(fieldnames,function(n){return fieldmap[n]})
+
+        $scope.fields = fields
+      }
     })
 
   })
 
 
-  de.controller('Table', function($scope, $http, pubsub, entity) {
+  de.controller('Table', function($scope, $http, pubsub, entity, $templateCache) {
+
+    $templateCache.put("footerTemplate.html",
+    "<div ng-show=\"showFooter\" class=\"ngFooterPanel\" ng-class=\"{'ui-widget-content': jqueryUITheme, 'ui-corner-bottom': jqueryUITheme}\" ng-style=\"footerStyle()\">" +
+
+//    "    <div class=\"ngTotalSelectContainer\" >" +
+//    "        <div class=\"ngFooterTotalItems\" ng-class=\"{'ngNoMultiSelect': !multiSelect}\" >" +
+//    "            <span class=\"ngLabel\">{{i18n.ngTotalItemsLabel}} {{maxRows()}}</span><span ng-show=\"filterText.length > 0\" class=\"ngLabel\">({{i18n.ngShowingItemsLabel}} {{totalFilteredItemsLength()}})</span>" +
+//    "        </div>" +
+//    "        <div class=\"ngFooterSelectedItems\" ng-show=\"multiSelect\">" +
+//    "            <span class=\"ngLabel\">{{i18n.ngSelectedItemsLabel}} {{selectedItems.length}}</span>" +
+//    "        </div>" +
+//    "    </div>" +
+
+    "    <div class=\"ngPagerContainer\" style=\"float: right; margin-top: 10px;\" ng-show=\"enablePaging\" ng-class=\"{'ngNoMultiSelect': !multiSelect}\">" +
+    "        <div style=\"float:left; margin-right: 10px;\" class=\"ngRowCountPicker\">" +
+    "            <span style=\"float: left; margin-top: 3px;\" class=\"ngLabel\">{{i18n.ngPageSizeLabel}}</span>" +
+    "            <select style=\"float: left;height: 27px; width: 100px\" ng-model=\"pagingOptions.pageSize\" >" +
+    "                <option ng-repeat=\"size in pagingOptions.pageSizes\">{{size}}</option>" +
+    "            </select>" +
+    "        </div>" +
+    "        <div style=\"float:left; margin-right: 10px; line-height:25px;\" class=\"ngPagerControl\" style=\"float: left; min-width: 135px;\">" +
+//    "            <button class=\"ngPagerButton\" ng-click=\"pageToFirst()\" ng-disabled=\"cantPageBackward()\" title=\"{{i18n.ngPagerFirstTitle}}\"><div class=\"ngPagerFirstTriangle\"><div class=\"ngPagerFirstBar\"></div></div></button>" +
+    "            <button class=\"ngPagerButton\" ng-click=\"pageBackward()\" ng-disabled=\"cantPageBackward()\" title=\"{{i18n.ngPagerPrevTitle}}\"><div class=\"ngPagerFirstTriangle ngPagerPrevTriangle\"></div></button>" +
+    "            <input class=\"ngPagerCurrent\" type=\"number\" style=\"width:50px; height: 24px; margin-top: 1px; padding: 0 4px;\" ng-model=\"pagingOptions.currentPage\"/>" +
+    "            <button class=\"ngPagerButton\" ng-click=\"pageForward()\" ng-disabled=\"cantPageForward()\" title=\"{{i18n.ngPagerNextTitle}}\"><div class=\"ngPagerLastTriangle ngPagerNextTriangle\"></div></button>" +
+//    "            <button class=\"ngPagerButton\" ng-click=\"pageToLast()\" ng-disabled=\"cantPageToLast()\" title=\"{{i18n.ngPagerLastTitle}}\"><div class=\"ngPagerLastTriangle\"><div class=\"ngPagerLastBar\"></div></div></button>" +
+    "        </div>" +
+    "    </div>" +
+    "</div>"
+  );
+
+    $scope.query = []
 
     $scope.data = []
 
     $scope.gridOptions = { 
       data: 'data',
       columnDefs: 'coldefs',
-      enableHighlighting: true,
+      enableHighlighting: false,
+
+      enablePaging:true,
+      pagingOptions:{
+        pageSizes: [20,200,2000],
+        pageSize: 200,
+        totalServerItems: 0,
+        currentPage: 1
+      },
+      showFooter:true,
+
       beforeSelectionChange: function(row) {
         if($scope.opening) { 
           $scope.opening = false
@@ -253,13 +347,41 @@
         pubsub.publish('view',['detail',$scope.kind,item])
       }
     }
+    $scope.pagingOptions = $scope.gridOptions.pagingOptions
+
 
     $scope.list = function(kind) {
       $scope.kind = kind || $scope.kind
-      entity.list($scope.kind,{},function(err,res){
+      if( !$scope.kind) return;
+
+      var q = {
+        skip$:($scope.pagingOptions.currentPage-1)*$scope.pagingOptions.pageSize,
+        limit$:$scope.pagingOptions.pageSize
+      }
+      
+      if( void 0 != $scope.sort ) {
+        var sq = {}
+        sq[$scope.sort]=$scope.ascend?1:-1
+        q.sort = encodeURI(JSON.stringify(sq))
+      }
+
+      var qf = {}
+      _.each( $scope.query, function(query) {
+        if( query.field && -1==query.field.indexOf('$') ) {
+          qf[query.field]=query.search 
+        }
+      })
+
+      if( 0 < _.keys(qf).length ) {
+        q.q=encodeURI(JSON.stringify(qf))
+      }
+
+      entity.list($scope.kind,q,function(err,res){
         $scope.coldefs = res.fields
         $scope.data = res.list
+        pubsub.publish('listed',[$scope.kind])
       })
+
       pubsub.publish('kind',[kind])
     }
 
@@ -269,9 +391,25 @@
       $scope.list( entity.urlformat(item.zone,item.base,item.name) )
     }
 
+
+    $scope.$watch('pagingOptions', function (newVal, oldVal) {
+      if(newVal !== oldVal ) {
+        $scope.pagingOptions.pageSize = parseInt($scope.pagingOptions.pageSize)
+        $scope.list()
+      }
+    }, true)
+
+
     pubsub.subscribe('view',function(view){
       if( 'ents' == view ) return $scope.list('sys_entity');
       if( 'list' == view ) return $scope.list();
+    })
+
+    pubsub.subscribe('search',function(query,sort,ascend){
+      $scope.query = query
+      $scope.sort = sort
+      $scope.ascend = ascend
+      return $scope.list();
     })
 
 
