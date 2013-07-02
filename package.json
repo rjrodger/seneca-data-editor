@@ -37,6 +37,6 @@
     "LICENSE.txt",
     "lib/data-editor.js",
     "test/readme.js",
-    "web",
+    "web"
   ]
 }
