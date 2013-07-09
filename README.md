@@ -35,11 +35,11 @@ mails and password reminders.
 If you're using this module, feel free to contact me on twitter if you
 have any questions! :) [@rjrodger](http://twitter.com/rjrodger)
 
-Current Version: 0.1.1 
+Current Version: 0.1.2
 
-Tested on: node 0.10.6, seneca 0.5.6
+Tested on: Node 0.10.6, 0.8.7, Seneca 0.5.9
 
-[![Build Status](https://secure.travis-ci.org/rjrodger/seneca-mail.png)](http://travis-ci.org/rjrodger/seneca-mail)
+
 
 
 

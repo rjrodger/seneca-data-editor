@@ -1,6 +1,6 @@
 {
   "name": "seneca-data-editor",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Seneca data editor plugin",
   "main": "lib/data-editor.js",
   "scripts": {
@@ -22,15 +22,15 @@
     "underscore": "~1.4.4",
     "connect": "~2.7.10",
     "tagx": "~0.1.0",
-    "seneca-jsonrest-api":"*"
+    "seneca-jsonrest-api":">=0.1.2"
   },
   "devDependencies": {
-    "seneca": "~0.5.7",
     "chai": "~1.6.0",
     "express": "~3.2.5",
     "gex": "~0.1.1",
-    "seneca-auth": "~0.2.4",
-    "seneca-user": "~0.2.1"
+    "seneca-auth": ">=0.2.5",
+    "seneca-user": ">=0.2.2",
+    "seneca": ">=0.5.9"
   },
   "files": [
     "README.md",
