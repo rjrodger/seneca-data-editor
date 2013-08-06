@@ -72,15 +72,15 @@
     var listfunc = {
       '*':function(kind,query,done){
         var qstr = 
-              '?skip='+query.skip$ +
-              '&limit='+query.limit$
+              '?skip$='+query.skip$ +
+              '&limit$='+query.limit$
 
         if(query.sort) {
-          qstr += '&sort='+query.sort
+          qstr += '&sort$='+query.sort
         }
 
         if(query.q) {
-          qstr += '&q='+query.q
+          qstr += '&q$='+query.q
         }
 
         $http({method: 'GET', url: '/data-editor/rest/'+kind+qstr, cache: false}).
