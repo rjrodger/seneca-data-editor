@@ -7,6 +7,13 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
+    <style>
+      [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+      display: none !important;
+      }
+    </style>
+
+
     <link href="css/bootstrap.css" rel="stylesheet">
     <link href="css/bootstrap-responsive.css" rel="stylesheet">
     <link href="css/ng-grid.css" rel="stylesheet">
@@ -29,19 +36,15 @@
     <script src="js/init.js"></script>
   </head>
 
-  <body ng-app="data_editor">
+  <body ng-app="data_editor" ng-cloak>
 
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <a class="brand" href="#">Seneca</a>
+          <a class="brand" href="#">Data Editor</a>
           <div class="nav-collapse collapse">
-            <ul class="nav">
-<!--
-              <li class="active"><a href="#">Home</a></li>
-              <li><a href="#about">About</a></li>
-              <li><a href="#contact">Contact</a></li>
--->
+            <ul class="nav nav-right">
+              <li><a href="/auth/logout">Log out</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
