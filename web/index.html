@@ -17,8 +17,8 @@
     <link href="css/bootstrap.css" rel="stylesheet">
     <link href="css/bootstrap-responsive.css" rel="stylesheet">
     <link href="css/ng-grid.css" rel="stylesheet">
-    <link href="css/jsoneditor.css" rel="stylesheet">
 
+    <link href="css/jsoneditor.css" rel="stylesheet">
     <link href="css/data-editor-style.css" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -32,11 +32,9 @@
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="ico/apple-touch-icon-72-precomposed.png">
     <link rel="apple-touch-icon-precomposed" href="ico/apple-touch-icon-57-precomposed.png">
     <link rel="shortcut icon" href="ico/favicon.png">
-
-    <script src="js/init.js"></script>
   </head>
 
-  <body ng-app="data_editor" ng-cloak>
+  <body ng-app="seneca-data-editor-web" ng-cloak>
 
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
@@ -53,115 +51,22 @@
 
     <div class="container">
 
-    <div class="row" ng-controller="ToolBar">
-      <div class="btn-group span12">
-        <button ng-click="showEnts()" class="btn">Entity</button>
-        <button ng-click="newItem()"   ng-disabled="!newbtn" class="btn">New</button>
-        <button ng-click="toggleQuery()" ng-disabled="!querybtn"  class="btn">Query</button>
-      </div>
-      <div ng-show="queryvisible" class="well span10">
-        sort: <select ng-model="qsort" ng-options="f.name for f in fields"></select>
-        <select ng-model="qdirection" ng-options="n for n in ['ascend','descend']"></select>
-        <br>
-        field: <select ng-model="qfield" ng-options="f.name for f in fields"></select>
-        =
-        <input ng-model="qstring">
-        <br>
-        <button ng-click="search()" class="btn">Search</button>
-        <button ng-click="clear()" class="btn">Clear</button>
-      </div>
-    </div>
-
-    <div class="row" ng-cloak>
-      <div ng-controller="Table" class="span12">
-        <h3>{{kind}}</h3>
-        <div class="gridStyle clearfix" ng-grid="gridOptions"></div>
-      </div>
-    </div>
-
-
-    <div class="row" ng-cloak>
-      <div ng-controller="Detail" ng-show="visible" class="span12">
-
-      <form class="form-horizontal">
-        <div id="ent-fields">
-
-          <div class="control-group">
-            <label class="control-label">{{kind}}</label>
-            <div class="controls">
-              {{ident}}
-            </div>
-          </div>
-
-          <div ng-repeat="field in fields" class="control-group">
-            <label class="control-label">{{field.name}}</label>
-            <div ng-show="editable" ng-switch="field.type" class="controls">
-              <input
-                 ng-switch-when="checkbox"
-                 type="checkbox" 
-                 style="width:{{field.width}}px;" 
-                 ng-model="changes[field.name]"
-                 >
-
-              <div ng-switch-when="json" id="seneca-jsoneditor-field-{{field.name}}" class="json-editor"></div>
-
-              <span ng-switch-when="fixed">{{field.value}}</span>
-
-              <textarea
-                 ng-switch-when="textarea"
-                 style="width:{{field.width}}px;height:{{field.height}}px;" 
-                 ng-model="changes[field.name]"
-                 >{{field.value}}</textarea>
-
-              <input 
-                 ng-switch-default
-                 type="{{field.type}}" 
-                 style="width:{{field.width}}px;" 
-                 ng-model="changes[field.name]"
-                 >
-            </div>
-            <span ng-hide="editable">{{field.value}}</span>
-          </div>
-        </div>
-
-<!--
-        <div class="control-group ent-new-field" style="background-color:#666">
-          <label class="control-label">New Field Name</label>
-          <div class="controls">
-            <input id="ent-new-field-name" type="text">
-          </div>
-        </div>
-
-        <div class="control-group ent-new-field" style="background-color:#666">
-          <label class="control-label">New Field Value</label>
-          <div class="controls">
-            <input id="ent-new-field-value" type="text">
-          </div>
-        </div>
--->
-
-       <div class="msg">
-         <div ng-show="''!=msg">{{msg}}</div>
-       </div>
-
-        <div class="control-group">
-          <button ng-click="saveItem()" ng-show="editable" class="btn">Save</button>
-          <button ng-click="closeItem()" class="btn">Close</button>
-        </div>
-      </form>
-
-      </div>
-    </div>
-
+    <div seneca-data-editor bar="bbb"></div>
 
     </div>
 
 
-    <script src="js/underscore-1.4.4.min.js"></script>
+    <script src="js/underscore-1.5.2.js"></script>
     <script src="js/jquery-2.0.0.js"></script>
-    <script src="js/angular.js"></script>
-    <script src="js/ng-grid-2.0.6.debug.js"></script>
+    <script src="js/angular-1.2.0.rc2.js"></script>
+    <script src="js/ng-grid-2.0.6.js"></script>
     <script src="js/jquery.jsoneditor.js"></script>
-    <script src="js/data-editor-client.js"></script>
+    <script src="/seneca/init.js"></script>
+    <script src="/seneca/data-editor/web.js"></script>
+
+    <script>
+      angular.module('seneca-data-editor-web',['senecaDataEditorModule',function(){}])
+    </script>
+
   </body>
 </html>

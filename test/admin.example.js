@@ -39,10 +39,15 @@ seneca.ready( function(err) {
 
 
   userpin.register({nick:'u1',name:'u1',password:'u1',
+
+                    // REMOVE, should not be needed, as perm used now
+                    /*
                     access:{list:[
                       {zone:'z1',base:'b1'},
                       {zone:'z1',base:'b2'}
                     ]},
+                     */
+
                     perm:{entity:[
                       {zone:'z1',base:'b1',perm$:'cr'},
                       {zone:'z1',base:'b2',perm$:'crudq'}

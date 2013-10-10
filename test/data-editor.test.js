@@ -30,57 +30,29 @@ describe('data-editor', function() {
       .ready( function(err,si){ 
         assert.isNull(err)
 
-        console.log(tagx("a b c"))
+        assert.equal('a,b,c', ''+tagx("a b c"))
 
         done()
       })
   })
 
 
-  it('init', function( done ){
-    seneca()
-      .use('..',{init:{sys:true}})
-      .ready( function(err,si){ 
-        assert.isNull(err)
-
-        si.act('role:data-editor, cmd:init',function(err){
-          if( err ) return done(err);
-
-          si.make$('sys','entity').list$({},function(err,list){
-            if( err ) return done(err);
-
-            assert.ok( gex('*=sys;*=entity;*=sys;*=user;*=sys;*=login;*').on(util.inspect(list)) )
-
-/*
-            si.act('role:mem-store,cmd:dump',function(err,data){
-              console.dir(data)
-
-              done()              
-            })
-*/
-            done()
-          })
-        })
-      })
-  })
-
-
-
   it('access', function( done ){
     seneca()
-      .use('..',{init:{sys:true}})
+      .use('..')
       .ready( function(err,si){ 
         assert.isNull(err)
 
-        si.act('role:data-editor, cmd:init',{entities:"-/-/a,-/-/b,-/A/t,-/A/u,-/B/v"},function(err){
+        si.act('role:util, cmd:define_sys_entity',{list:"-/-/a,-/-/b,-/A/t,-/A/u,-/B/v"},function(err){
           if( err ) return done(err);
 
-          si.make$('sys','entity').list$({},function(err,list){
+          si.make$('sys/entity').list$({},function(err,list){
             if( err ) return done(err);
 
-            assert.ok( gex('*=sys;*=entity;*=sys;*=user;*=sys;*=login;*=a;*=b;*').on(util.inspect(list)) )
 
+            assert.ok( gex('*=a;*=b;*=A;*=t;*=A;*=u;*=B;*=v;*').on(util.inspect(list)) )
 
+/*
             var user = {access:{name:'a'}}
 
             si.act('role:data-editor,cmd:entlist',{user:user},function(err,out){
@@ -108,7 +80,10 @@ describe('data-editor', function() {
                 })
               })
             })
-          })
+*/ 
+            done()
+         })
+ 
         })
       })
   })

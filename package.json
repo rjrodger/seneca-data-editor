@@ -27,7 +27,7 @@
   ],
   "dependencies": {
     "underscore": "~1.5.2",
-    "tagx": "~0.1.0",
+    "tagx": "~0.1.1",
     "seneca-jsonrest-api": "~0.1.2",
     "connect": "~2.9.0",
     "seneca-perm": "~0.1.1"

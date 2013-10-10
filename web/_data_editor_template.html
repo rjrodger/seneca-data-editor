@@ -1,0 +1,104 @@
+<div ng-controller="senecaDataEditorCtrl" ng-show="show_main">
+
+    <div class="row" ng-controller="senecaDataEditorToolBar">
+      <div class="btn-group span12">
+        <button ng-click="showEnts()" class="btn">Entity</button>
+        <button ng-click="newItem()"   ng-disabled="!newbtn" class="btn">New</button>
+        <button ng-click="toggleQuery()" ng-disabled="!querybtn"  class="btn">Query</button>
+      </div>
+      <div ng-show="queryvisible" class="well span10">
+        sort: <select ng-model="qsort" ng-options="f.name for f in fields"></select>
+        <select ng-model="qdirection" ng-options="n for n in ['ascend','descend']"></select>
+        <br>
+        field: <select ng-model="qfield" ng-options="f.name for f in fields"></select>
+        =
+        <input ng-model="qstring">
+        <br>
+        <button ng-click="search()" class="btn">Search</button>
+        <button ng-click="clear()" class="btn">Clear</button>
+      </div>
+    </div>
+
+    <div class="row" ng-cloak>
+      <div ng-controller="senecaDataEditorTable" class="span12">
+        <h3>{{nicekind}}</h3>
+        <div class="gridStyle clearfix" seneca-Data-Editor-Ng-Grid="gridOptions"></div>
+      </div>
+    </div>
+
+
+    <div class="row" ng-cloak>
+      <div ng-controller="senecaDataEditorDetail" ng-show="visible" class="span12">
+
+      <form class="form-horizontal">
+        <div id="ent-fields">
+
+          <div class="control-group">
+            <label class="control-label">{{nicekind}}</label>
+            <div class="controls">
+              {{ident}}
+            </div>
+          </div>
+
+          <div ng-repeat="field in fields" class="control-group">
+            <label class="control-label">{{field.name}}</label>
+            <div ng-show="editable" ng-switch="field.type" class="controls">
+              <input
+                 ng-switch-when="checkbox"
+                 type="checkbox" 
+                 style="width:{{field.width}}px;" 
+                 ng-model="changes[field.name]"
+                 >
+
+              <div ng-switch-when="json" id="seneca-jsoneditor-field-{{field.name}}" class="json-editor"></div>
+
+              <span ng-switch-when="fixed">{{field.value}}</span>
+
+              <textarea
+                 ng-switch-when="textarea"
+                 style="width:{{field.width}}px;height:{{field.height}}px;" 
+                 ng-model="changes[field.name]"
+                 >{{field.value}}</textarea>
+
+              <input 
+                 ng-switch-default
+                 type="{{field.type}}" 
+                 style="width:{{field.width}}px;" 
+                 ng-model="changes[field.name]"
+                 >
+            </div>
+            <span ng-hide="editable">{{field.value}}</span>
+          </div>
+        </div>
+
+<!--
+        <div class="control-group ent-new-field" style="background-color:#666">
+          <label class="control-label">New Field Name</label>
+          <div class="controls">
+            <input id="ent-new-field-name" type="text">
+          </div>
+        </div>
+
+        <div class="control-group ent-new-field" style="background-color:#666">
+          <label class="control-label">New Field Value</label>
+          <div class="controls">
+            <input id="ent-new-field-value" type="text">
+          </div>
+        </div>
+-->
+
+
+       <div class="msg">
+         <div ng-show="''!=msg">{{msg}}</div>
+       </div>
+
+        <div class="control-group">
+          <button ng-click="saveItem()" ng-show="editable" class="btn">Save</button>
+          <button ng-click="closeItem()" class="btn">Close</button>
+        </div>
+      </form>
+
+      </div>
+    </div>
+
+</div>

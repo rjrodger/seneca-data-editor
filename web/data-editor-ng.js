@@ -1,16 +1,22 @@
+;(function(window, angular) {
+  "use strict";
 
-
-
-;(function(){
   function noop(){for(var i=0;i<arguments.length;i++)if('function'==typeof(arguments[i]))arguments[i]()}
 
-  var config = Seneca.config.data_editor
-  var tagmap = {}
-  _.each(config.tags, function(tag){ tagmap[tag]=1 })
+  var prefix = seneca.config['data-editor'].prefix
 
-  var de = Seneca.data_editor = angular.module('data_editor',['ngGrid'])
+  var options = {
+    tags:{
+      entname:true,
+      entedit:true
+    }
+  }
 
-  de.service('pubsub', function() {
+  var senecaDataEditorModule = angular.module('senecaDataEditorModule',['senecaDataEditorNgGrid'])
+
+
+
+  senecaDataEditorModule.service('senecaDataEditorPubSub', function() {
     var cache = {};
     return {
       publish: function(topic, args) { 
@@ -39,17 +45,48 @@
   });
 
 
-  de.service('entity', function($http) {
+  senecaDataEditorModule.service('senecaDataEditorEntity', function($http) {
     var entlist = []
     var entmap  = {}
     var fieldmap = {}
 
     function urlformat() {
       var sb = []
-      if( void 0 != arguments[0] ) sb.push(arguments[0]);
-      if( void 0 != arguments[1] ) sb.push(arguments[1]);
-      if( void 0 != arguments[2] ) sb.push(arguments[2]);
-      return sb.join('_')
+
+      var zone = arguments[0]
+      var base = arguments[1]
+      var name = arguments[2]
+
+      if( null != zone ) {
+        sb.push(zone+'_')
+
+        if( null != base ) {
+          sb.push(base+'_')
+        }
+        else {
+          sb.push('_')
+        }
+
+        sb.push(name)
+      }
+
+      else if( null != base ) {
+        sb.push(base+'_')
+        sb.push(name)
+      }
+
+      else {
+        sb.push(name)
+      }
+
+      //if( void 0 != arguments[0] ) sb.push(arguments[0]+'_');
+      //if( void 0 != arguments[1] ) sb.push(arguments[1]+'_');
+      //if( void 0 != arguments[2] ) sb.push(arguments[2]);
+      //sb.push( arguments[0]+'_' );
+      //sb.push( arguments[1]+'_' );
+      //sb.push( arguments[2] );
+
+      return sb.join('')
     }
 
     function ucf(s) {
@@ -83,7 +120,7 @@
           qstr += '&q$='+query.q
         }
 
-        $http({method: 'GET', url: '/data-editor/rest/'+kind+qstr, cache: false}).
+        $http({method: 'GET', url: prefix+'/rest/'+kind+qstr, cache: false}).
           success(function(data, status) {
             var srcfields = []
 
@@ -141,7 +178,7 @@
                 if( fieldspec.hide ) {
                   keep = false
                 }
-                else if( tagmap.hidecomplex && fieldspec.complex ) {
+                else if( options.tags.hidecomplex && fieldspec.complex ) {
                   keep = false
                 }
               }
@@ -167,7 +204,7 @@
           })
       },
       'sys_entity': function(kind,query,done) {
-        $http({method: 'GET', url: '/data-editor/entlist', cache: false}).
+        $http({method: 'GET', url: prefix+'/entlist', cache: false}).
           success(function(data, status) {
             entmap = {}
             entlist = data.entlist
@@ -182,15 +219,15 @@
               list:data.entlist,
               fields:[
                 {field:'action$',displayName:'Action',width:100,maxWidth:100,
-                 cellTemplate: '<button ng-click="onAction(\'open\',row)" class="btn btn-primary btn-small">Open</button>'
+                 cellTemplate: '<button ng-click="onAction(\'open\',row)" class="btn btn-primary btn-small data-editor-cell-button">Open</button>'
                 },
               ]
             }
 
-            if( tagmap.entzone ) {
+            if( options.tags.entzone ) {
               out.fields.push( {field:'zone',displayName:'Zone'} )
             }
-            if( tagmap.entbase ) {
+            if( options.tags.entbase ) {
               out.fields.push( {field:'base',displayName:'Base'} )
             }
             out.fields.push( {field:'name',displayName:'Name'} )
@@ -211,13 +248,13 @@
       },
       save: function(kind,item,done){
         var idpart = void 0 != item.id ? '/'+item.id : ''
-        $http({method: 'POST', url: '/data-editor/rest/'+kind+idpart, data:item, headers:headers, cache: false}).
+        $http({method: 'POST', url: prefix+'/rest/'+kind+idpart, data:item, headers:headers, cache: false}).
           success(function(data, status) {
             done(null,data)
           })
       },
       load: function(kind,id,done) {
-        $http({method: 'GET', url: '/data-editor/rest/'+kind+'/'+id, cache: false}).
+        $http({method: 'GET', url: prefix+'/rest/'+kind+'/'+id, cache: false}).
           success(function(data, status) {
             done(null,data)
           })
@@ -225,21 +262,41 @@
       urlformat: urlformat,
       fieldmap: function(kind) {
         return fieldmap[kind] || {}
+      },
+      kindparts: function(kind) {
+        var parts = kind.split('_')
+        if( 0 == parts.length ) return [null,null,null];
+        if( 1 == parts.length ) return [null,null,parts[0]];
+        if( 2 == parts.length ) return [null,parts[0],parts[1]];
+        return [parts[0],parts[1],parts.slice(2).join('_')];
+      },
+      nicekind: function(kind){
+        var parts = this.kindparts(kind)
+        var niceparts = []
+        if( options.tags.entzone ) niceparts.push(parts[0]||'-');
+        if( options.tags.entbase ) niceparts.push(parts[1]||'-');
+        if( options.tags.entname ) niceparts.push(parts[2]||'-');
+        return niceparts.join('/')
       }
     }
   })
 
 
-  de.controller('ToolBar', function($scope, pubsub, entity) {
+
+  senecaDataEditorModule.controller('senecaDataEditorToolBar', function($scope, $rootScope, senecaDataEditorPubSub, senecaDataEditorEntity) {
     $scope.newbtn = false 
     $scope.queryvisible = false
 
+    $rootScope.$on('seneca-data-editor/show-ents',function(){
+      $scope.showEnts()
+    })
+
     $scope.showEnts = function(){
-      pubsub.publish('view',['ents'])
+      senecaDataEditorPubSub.publish('view',['ents'])
     }
 
     $scope.newItem = function() {
-      pubsub.publish('view',['detail',$scope.kind])
+      senecaDataEditorPubSub.publish('view',['detail',$scope.kind])
     }
 
     $scope.toggleQuery = function() {
@@ -258,24 +315,24 @@
         q = [{field:qfield,search:qstring}]
       }
 
-      pubsub.publish('search',[q,sort,ascend])
+      senecaDataEditorPubSub.publish('search',[q,sort,ascend])
     }
 
 
     $scope.clear = function() { 
       $scope.qstring = ''
-      pubsub.publish('search',[[]])
+      senecaDataEditorPubSub.publish('search',[[]])
     }
 
-    pubsub.subscribe('kind',function(kind){
+    senecaDataEditorPubSub.subscribe('kind',function(kind){
       $scope.newbtn = 'sys_entity' != kind
       $scope.querybtn = 'sys_entity' != kind
     })
 
-    pubsub.subscribe('listed',function(kind){
+    senecaDataEditorPubSub.subscribe('listed',function(kind){
       if( kind != $scope.kind ) {
         $scope.kind = kind
-        var fieldmap = entity.fieldmap(kind)
+        var fieldmap = senecaDataEditorEntity.fieldmap(kind)
 
         var fieldnames = _.filter(_.keys(fieldmap),function(k){return -1==k.indexOf('$')}).sort()
         if(_.contains(fieldnames['id'])){_.remove(fieldnames,'id'); fieldnames=fieldnames.unshift('id')}
@@ -288,8 +345,7 @@
   })
 
 
-  de.controller('Table', function($scope, $http, pubsub, entity, $templateCache) {
-
+  senecaDataEditorModule.controller('senecaDataEditorTable', function($scope, $http, senecaDataEditorPubSub, senecaDataEditorEntity, $templateCache) {
     $templateCache.put("footerTemplate.html",
     "<div ng-show=\"showFooter\" class=\"ngFooterPanel\" ng-class=\"{'ui-widget-content': jqueryUITheme, 'ui-corner-bottom': jqueryUITheme}\" ng-style=\"footerStyle()\">" +
 
@@ -320,6 +376,8 @@
     "</div>"
   );
 
+    $scope.nicekind = ''
+
     $scope.query = []
 
     $scope.data = []
@@ -344,7 +402,7 @@
           return
         }
         var item = $scope.data[row.rowIndex]
-        pubsub.publish('view',['detail',$scope.kind,item])
+        senecaDataEditorPubSub.publish('view',['detail',$scope.kind,item])
       }
     }
     $scope.pagingOptions = $scope.gridOptions.pagingOptions
@@ -353,6 +411,8 @@
     $scope.list = function(kind) {
       $scope.kind = kind || $scope.kind
       if( !$scope.kind) return;
+
+      $scope.nicekind = senecaDataEditorEntity.nicekind(kind)
 
       var q = {
         skip$:($scope.pagingOptions.currentPage-1)*$scope.pagingOptions.pageSize,
@@ -376,19 +436,19 @@
         q.q=encodeURI(JSON.stringify(qf))
       }
 
-      entity.list($scope.kind,q,function(err,res){
+      senecaDataEditorEntity.list($scope.kind,q,function(err,res){
         $scope.coldefs = res.fields
         $scope.data = res.list
-        pubsub.publish('listed',[$scope.kind])
+        senecaDataEditorPubSub.publish('listed',[$scope.kind])
       })
 
-      pubsub.publish('kind',[kind])
+      senecaDataEditorPubSub.publish('kind',[kind])
     }
 
     $scope.onAction = function(name,row) {
       $scope.opening = true
       var item = $scope.data[row.rowIndex]
-      $scope.list( entity.urlformat(item.zone,item.base,item.name) )
+      $scope.list( senecaDataEditorEntity.urlformat(item.zone,item.base,item.name) )
     }
 
 
@@ -400,25 +460,24 @@
     }, true)
 
 
-    pubsub.subscribe('view',function(view){
+    senecaDataEditorPubSub.subscribe('view',function(view){
       if( 'ents' == view ) return $scope.list('sys_entity');
       if( 'list' == view ) return $scope.list();
     })
 
-    pubsub.subscribe('search',function(query,sort,ascend){
+    senecaDataEditorPubSub.subscribe('search',function(query,sort,ascend){
       $scope.query = query
       $scope.sort = sort
       $scope.ascend = ascend
       return $scope.list();
     })
 
-
     $scope.list('sys_entity')
   })
 
 
 
-  de.controller('Detail', function($scope, pubsub, entity) {
+  senecaDataEditorModule.controller('senecaDataEditorDetail', function($scope, senecaDataEditorPubSub, senecaDataEditorEntity) {
 
     $scope.visible = false
     $scope.kind = 'none'
@@ -427,8 +486,8 @@
     $scope.fields = []
 
     $scope.loadItem = function(kind,item) {
-      (item?entity.load:noop)(kind, item&&item.id, function(err,item,fieldmap){
-        var entfieldmap = entity.fieldmap(kind)
+      (item?senecaDataEditorEntity.load:noop)(kind, item&&item.id, function(err,item,fieldmap){
+        var entfieldmap = senecaDataEditorEntity.fieldmap(kind)
 
         if( !item ) {
           item = {}
@@ -438,14 +497,16 @@
         }
 
         $scope.kind = kind
+        $scope.nicekind = senecaDataEditorEntity.nicekind(kind)
         $scope.item = item
         $scope.changes = _.clone(item)
         $scope.ident = item.id
 
-        $scope.editable = 'sys_entity' != kind
+        $scope.editable =  ('sys_entity' == kind && options.tags.entedit ) || true
 
         var fields = []
 
+        console.log(item)
 
         _.each(item,function(v,k){
           if( '$'==k || 'id'==k || ~k.indexOf('$')) return;
@@ -490,7 +551,7 @@
           if( -1!=k.indexOf('$') ) return;
           if( _.isObject(v) ) {
             setTimeout(function(){
-              $('#seneca-jsoneditor-field-'+k).jsonEditor({json:v},{
+              $('#seneca-jsoneditor-field-'+k).senecaDataEditor_jsonEditor({json:v},{
                 change:function(updated){
                   $scope.changes[k]=updated.json
                 }
@@ -510,11 +571,11 @@
       _.each($scope.changes,function(v,k){
         $scope.item[k]=v
       })
-      entity.save($scope.kind,$scope.item,function(err,res){
+      senecaDataEditorEntity.save($scope.kind,$scope.item,function(err,res){
         $scope.ident = res.id
         $scope.msg = 'Saved'
         $scope.saving = false
-        pubsub.publish('view',['list'])
+        senecaDataEditorPubSub.publish('view',['list'])
       })
     }
 
@@ -522,7 +583,7 @@
       $scope.visible = false
     }
 
-    pubsub.subscribe('view',function(view,kind,item){
+    senecaDataEditorPubSub.subscribe('view',function(view,kind,item){
       if( 'detail' != view ) return;
       if( kind ) {
         $scope.loadItem(kind,item,true)
@@ -531,9 +592,53 @@
 
   })
 
-  de.controller('Fields', function($scope, pubsub, entity) {
+  senecaDataEditorModule.controller('senecaDataEditorFields', function($scope, senecaDataEditorPubSub, senecaDataEditorEntity) {
   })
 
-})();
 
+
+  senecaDataEditorModule.service('senecaDataEditorAPI', ['$http',function($http){
+    return {
+      // TODO: add entlist
+      config: function(done){
+        $http({method:'GET',url:prefix+'/config', cache:false})
+          .success(function(out){
+            done(out)
+          })
+      },
+    }
+  }])
+
+
+  senecaDataEditorModule.directive('senecaDataEditor', ['senecaDataEditorAPI', function(senecaDataEditorAPI) {
+    var def = {
+      restrict:'A',
+      scope:{
+        options:'@',
+      },
+      link: function( scope, elem, attrs ){
+        var params = scope.$eval(attrs.senecaDataEditor||'{}')||{}
+        // options.tags = _.extend(options.tags,tagx(params.tags||''))
+        console.log(options)
+
+        senecaDataEditorAPI.config(function(config){
+          _.each(config.tags, function(tag){ options.tags[tag]=true })
+        })
+      },
+      templateUrl: prefix+"/_data_editor_template.html"
+    }
+    return def
+  }])
+
+
+  senecaDataEditorModule.controller("senecaDataEditorCtrl", ["$scope", "$rootScope", "$timeout", 'senecaDataEditorAPI', function($scope, $rootScope, $timeout, senecaDataEditorAPI) {
+    $scope.show_main = true
+
+    $rootScope.$on('seneca-data-editor/show-ents',function(){
+      $scope.show_main = true
+    })
+  }]);
+
+
+}(window, angular));
 
