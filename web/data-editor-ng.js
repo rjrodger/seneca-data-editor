@@ -15,40 +15,56 @@
   var senecaDataEditorModule = angular.module('senecaDataEditorModule',['senecaDataEditorNgGrid'])
 
 
-
   senecaDataEditorModule.service('senecaDataEditorPubSub', function() {
     var cache = {};
+
     return {
-      publish: function(topic, args) { 
-	cache[topic] && $.each(cache[topic], function() {
-	  this.apply(null, args || []);
-	});
-      },
+      make: function( maker ) {
+        return {
+          pub: function(topic, args) { 
+	    cache[topic] && $.each(cache[topic], function() {
+              console.log( maker + ' : '+topic+'('+JSON.stringify(args)+') -> '+this.maker+' # '+this.name)
+	      this.apply(null, args || []);
+	    })
+          },
+          
+          sub: function(topic, callback) {
+	    if(!cache[topic]) {
+	      cache[topic] = [];
+	    }
+            callback.maker = maker
+	    cache[topic].push(callback);
+	    return [topic, callback]; 
+          },
       
-      subscribe: function(topic, callback) {
-	if(!cache[topic]) {
-	  cache[topic] = [];
-	}
-	cache[topic].push(callback);
-	return [topic, callback]; 
-      },
-      
-      unsubscribe: function(handle) {
-	var t = handle[0];
-	cache[t] && d.each(cache[t], function(idx){
-	  if(this == handle[1]){
-	    cache[t].splice(idx, 1);
-	  }
-	});
+          unsub: function(topic) {
+	    cache[topic] && $.each(cache[topic], function(i){
+	      if(this.maker == maker){
+	        cache[t].splice(i, 1);
+	      }
+	    })
+          }
+        }
       }
     }
-  });
+  })
+
 
 
   senecaDataEditorModule.service('senecaDataEditorEntity', function($http) {
     var entlist = []
     var entmap  = {}
     var fieldmap = {}
+
+    var querystring = 'foo=1'
+
+    function qs(append) {
+      var out = null == querystring ? '' : ((append ? '&':'?')+querystring)
+      console.log(out)
+      return out
+    }
+
+
 
     function urlformat() {
       var sb = []
@@ -93,35 +109,59 @@
       return 0 < s.length ? s[0].toUpperCase()+s.substring(1) : s
     }
 
-    function makefieldmap(kind,ent) {
-      if( fieldmap[kind] ) return fieldmap[kind];
+    function makefieldmap(kind,fields) {
+      //if( fieldmap[kind] ) return fieldmap[kind];
       
-      var entfieldmap = {}
+      var entfieldmap = fieldmap[kind] || {}
 
-      _.each(ent&&ent.fields||[],function(field){
+      _.each(fields||[],function(field){
         entfieldmap[field.name] = field
       })
       
+      if( 'sys_entity' === kind ) {
+        entfieldmap.zone && ( entfieldmap.zone.hide = !options.tags.entzone )
+        entfieldmap.base && ( entfieldmap.base.hide = !options.tags.entbase )
+        entfieldmap.name && ( entfieldmap.name.hide = !options.tags.entname )
+      }
+
       return fieldmap[kind] = entfieldmap
     }
 
 
-    var listfunc = {
-      '*':function(kind,query,done){
-        var qstr = 
-              '?skip$='+query.skip$ +
-              '&limit$='+query.limit$
-
-        if(query.sort) {
-          qstr += '&sort$='+query.sort
+    function makeGridSpec( kind, fields ) {
+      return _.compact( _.map(fields,function(field){
+        var gridspec = {field:field.name,displayName:ucf(field.name)}
+        var entfieldmap = makefieldmap(kind,fields)
+        var fieldspec = entfieldmap[field.name]
+        if( fieldspec ) {
+          if( fieldspec.hide ) return null;
+          gridspec.displayName = fieldspec.niceName ? fieldspec.niceName : gridspec.displayName
         }
+        return gridspec
+      }))
+    }
 
-        if(query.q) {
-          qstr += '&q$='+query.q
-        }
 
-        $http({method: 'GET', url: prefix+'/rest/'+kind+qstr, cache: false}).
-          success(function(data, status) {
+    function listfunc(kind,query,done){
+      var qstr = 
+            '?skip='+query.skip$ +
+            '&limit='+query.limit$
+
+      if(query.sort) {
+        qstr += '&sort='+query.sort
+      }
+
+      if(query.q) {
+        qstr += '&q='+query.q
+      }
+
+      qstr += qs(true)
+
+      $http({method: 'GET', url: prefix+'/rest/'+kind+qstr, cache: false}).
+        success(function(data, status) {
+
+          if( 'sys_entity' != kind ) {
+
             var srcfields = []
 
 
@@ -131,7 +171,7 @@
               ent = {fields:{}}
             }
 
-            var entfieldmap = makefieldmap(kind,ent)
+            var entfieldmap = makefieldmap(kind,ent.fields)
 
             var srcfields = _.keys(entfieldmap)
             
@@ -149,7 +189,7 @@
                   entfield.default = 
                     _.isArray(v) ? [] :
                     _.isObject(v) ? {} :
-                    _.isNumber(v) ? 0 :
+                  _.isNumber(v) ? 0 :
                     _.isBoolean(v) ? false :
                     ''
                 }
@@ -186,37 +226,48 @@
               return keep
             })
 
-
-            // create ng-grid specs
-            fields = _.map(fields,function(field){
-              var gridspec = {field:field,displayName:ucf(field)}
-              if( entfieldmap[field] ) {
-                var fieldspec = entfieldmap[field]
-                gridspec.displayName = fieldspec.niceName ? fieldspec.niceName : gridspec.displayName
-              }
-              return gridspec
-            })
+            var fieldspecs = _.map(fields,function(field){return entfieldmap[field]})
+            console.log(fieldspecs)
 
             done(null,{
               list:data.list,
-              fields:fields
+              fields:makeGridSpec( kind, fieldspecs )
             })
-          })
-      },
-      'sys_entity': function(kind,query,done) {
-        $http({method: 'GET', url: prefix+'/entlist', cache: false}).
-          success(function(data, status) {
+
+
+          }
+          else {
+            //},
+            //'sys_entity': function(kind,query,done) {
+            //$http({method: 'GET', url: prefix+'/entlist', cache: false}).
+            //$http({method: 'GET', url: prefix+'/rest/'+kind+qstr, cache: false}).
+            //success(function(data, status) {
+            //entlist = data.entlist
+
+            entlist = data.list
+            console.log('entlist',entlist)
+
             entmap = {}
-            entlist = data.entlist
+
 
             entlist = _.map(entlist,function(ent){
-              entmap[urlformat(ent.zone,ent.base,ent.name)] = ent
+              var kind = urlformat(ent.zone,ent.base,ent.name)
+              entmap[kind] = ent
               ent.action$ = 'open'
+              makefieldmap( kind, ent.fields )
               return ent
             })
 
+            var fieldspecs = [
+              {name:'name',niceName:'Name',hide:!options.tags.entname},
+              {name:'base',niceName:'Base',hide:!options.tags.entbase},
+              {name:'zone',niceName:'Zone',hide:!options.tags.entzone}
+            ]
+
+            var fields = makefieldmap( 'sys_entity', fieldspecs )
+
             var out = {
-              list:data.entlist,
+              list:entlist,
               fields:[
                 {field:'action$',displayName:'Action',width:100,maxWidth:100,
                  cellTemplate: '<button ng-click="onAction(\'open\',row)" class="btn btn-primary btn-small data-editor-cell-button">Open</button>'
@@ -224,37 +275,32 @@
               ]
             }
 
-            if( options.tags.entzone ) {
-              out.fields.push( {field:'zone',displayName:'Zone'} )
-            }
-            if( options.tags.entbase ) {
-              out.fields.push( {field:'base',displayName:'Base'} )
-            }
-            out.fields.push( {field:'name',displayName:'Name'} )
-      
+            out.fields = out.fields.concat( makeGridSpec( kind, fields ) )
+
             done(null,out)
-          })
-      }
+          }
+        })
     }
 
     var headers = {
       //'Content-type': 'application/json'
     }
 
+
     return {
       list: function(kind,query,done){
-        var f = listfunc[kind] ? listfunc[kind] : listfunc['*'] 
-        f(kind,query,done)
+        //var f = listfunc[kind] ? listfunc[kind] : listfunc['*'] 
+        listfunc(kind,query,done)
       },
       save: function(kind,item,done){
         var idpart = void 0 != item.id ? '/'+item.id : ''
-        $http({method: 'POST', url: prefix+'/rest/'+kind+idpart, data:item, headers:headers, cache: false}).
+        $http({method: 'POST', url: prefix+'/rest/'+kind+idpart+qs(), data:item, headers:headers, cache: false}).
           success(function(data, status) {
             done(null,data)
           })
       },
       load: function(kind,id,done) {
-        $http({method: 'GET', url: prefix+'/rest/'+kind+'/'+id, cache: false}).
+        $http({method: 'GET', url: prefix+'/rest/'+kind+'/'+id+qs(), cache: false}).
           success(function(data, status) {
             done(null,data)
           })
@@ -277,6 +323,9 @@
         if( options.tags.entbase ) niceparts.push(parts[1]||'-');
         if( options.tags.entname ) niceparts.push(parts[2]||'-');
         return niceparts.join('/')
+      },
+      setQueryString: function( qs ) {
+        querystring = qs
       }
     }
   })
@@ -284,6 +333,8 @@
 
 
   senecaDataEditorModule.controller('senecaDataEditorToolBar', function($scope, $rootScope, senecaDataEditorPubSub, senecaDataEditorEntity) {
+    var pubsub = senecaDataEditorPubSub.make('ToolBar')
+
     $scope.newbtn = false 
     $scope.queryvisible = false
 
@@ -292,15 +343,19 @@
     })
 
     $scope.showEnts = function(){
-      senecaDataEditorPubSub.publish('view',['ents'])
+      pubsub.pub('view',['ents'])
     }
 
     $scope.newItem = function() {
-      senecaDataEditorPubSub.publish('view',['detail',$scope.kind])
+      pubsub.pub('view',['detail',$scope.kind])
     }
 
     $scope.toggleQuery = function() {
       $scope.queryvisible = !$scope.queryvisible
+    }
+
+    $scope.close = function() {
+      $scope.queryvisible = false
     }
 
     $scope.search = function() { 
@@ -315,23 +370,25 @@
         q = [{field:qfield,search:qstring}]
       }
 
-      senecaDataEditorPubSub.publish('search',[q,sort,ascend])
+      pubsub.pub('search',[q,sort,ascend])
     }
 
 
     $scope.clear = function() { 
       $scope.qstring = ''
-      senecaDataEditorPubSub.publish('search',[[]])
+      pubsub.pub('search',[[]])
     }
 
-    senecaDataEditorPubSub.subscribe('kind',function(kind){
-      $scope.newbtn = 'sys_entity' != kind
-      $scope.querybtn = 'sys_entity' != kind
-    })
+    pubsub.sub('kind',function onKind(kind){
+      $scope.kind = kind
+      $scope.newbtn   = options.tags.entnew || ('sys_entity' != kind)
+      $scope.querybtn = options.tags.entquery || ('sys_entity' != kind)
 
-    senecaDataEditorPubSub.subscribe('listed',function(kind){
-      if( kind != $scope.kind ) {
-        $scope.kind = kind
+    //})
+
+    //pubsub.sub('listed',function updateQueryFields(kind){
+      //if( kind != $scope.kind ) {
+        //$scope.kind = kind
         var fieldmap = senecaDataEditorEntity.fieldmap(kind)
 
         var fieldnames = _.filter(_.keys(fieldmap),function(k){return -1==k.indexOf('$')}).sort()
@@ -339,13 +396,15 @@
         var fields = _.map(fieldnames,function(n){return fieldmap[n]})
 
         $scope.fields = fields
-      }
+        console.log(fields)
+      //}
     })
-
   })
 
 
   senecaDataEditorModule.controller('senecaDataEditorTable', function($scope, $http, senecaDataEditorPubSub, senecaDataEditorEntity, $templateCache) {
+    var pubsub = senecaDataEditorPubSub.make('Table')
+
     $templateCache.put("footerTemplate.html",
     "<div ng-show=\"showFooter\" class=\"ngFooterPanel\" ng-class=\"{'ui-widget-content': jqueryUITheme, 'ui-corner-bottom': jqueryUITheme}\" ng-style=\"footerStyle()\">" +
 
@@ -402,14 +461,14 @@
           return
         }
         var item = $scope.data[row.rowIndex]
-        senecaDataEditorPubSub.publish('view',['detail',$scope.kind,item])
+        pubsub.pub('view',['detail',$scope.kind,item])
       }
     }
     $scope.pagingOptions = $scope.gridOptions.pagingOptions
 
 
     $scope.list = function(kind) {
-      $scope.kind = kind || $scope.kind
+      $scope.kind = kind || (kind = $scope.kind)
       if( !$scope.kind) return;
 
       $scope.nicekind = senecaDataEditorEntity.nicekind(kind)
@@ -439,10 +498,10 @@
       senecaDataEditorEntity.list($scope.kind,q,function(err,res){
         $scope.coldefs = res.fields
         $scope.data = res.list
-        senecaDataEditorPubSub.publish('listed',[$scope.kind])
+        pubsub.pub('listed',[$scope.kind])
       })
 
-      senecaDataEditorPubSub.publish('kind',[kind])
+      pubsub.pub('kind',[kind])
     }
 
     $scope.onAction = function(name,row) {
@@ -460,12 +519,12 @@
     }, true)
 
 
-    senecaDataEditorPubSub.subscribe('view',function(view){
+    pubsub.sub('view',function onView(view){
       if( 'ents' == view ) return $scope.list('sys_entity');
       if( 'list' == view ) return $scope.list();
     })
 
-    senecaDataEditorPubSub.subscribe('search',function(query,sort,ascend){
+    pubsub.sub('search', function onSearch(query,sort,ascend){
       $scope.query = query
       $scope.sort = sort
       $scope.ascend = ascend
@@ -478,6 +537,7 @@
 
 
   senecaDataEditorModule.controller('senecaDataEditorDetail', function($scope, senecaDataEditorPubSub, senecaDataEditorEntity) {
+    var pubsub = senecaDataEditorPubSub.make('Detail')
 
     $scope.visible = false
     $scope.kind = 'none'
@@ -505,8 +565,6 @@
         $scope.editable =  ('sys_entity' == kind && options.tags.entedit ) || true
 
         var fields = []
-
-        console.log(item)
 
         _.each(item,function(v,k){
           if( '$'==k || 'id'==k || ~k.indexOf('$')) return;
@@ -562,6 +620,7 @@
 
         $scope.visible = true
       })
+
     }
 
 
@@ -575,7 +634,7 @@
         $scope.ident = res.id
         $scope.msg = 'Saved'
         $scope.saving = false
-        senecaDataEditorPubSub.publish('view',['list'])
+        pubsub.pub('view',['list'])
       })
     }
 
@@ -583,13 +642,23 @@
       $scope.visible = false
     }
 
-    senecaDataEditorPubSub.subscribe('view',function(view,kind,item){
-      if( 'detail' != view ) return;
+    pubsub.sub('view',function onView(view,kind,item){
+      if( 'detail' != view ) {
+        $scope.visible = false;
+        return;
+      }
       if( kind ) {
         $scope.loadItem(kind,item,true)
       }
     })
 
+    //pubsub.sub('view',function onView(view){
+    //  if( 'ents' == view || 'list' == view ) 
+    //})
+
+    pubsub.sub('kind',function onKind(kind){
+      $scope.visible = false;
+    })
   })
 
   senecaDataEditorModule.controller('senecaDataEditorFields', function($scope, senecaDataEditorPubSub, senecaDataEditorEntity) {
@@ -610,19 +679,23 @@
   }])
 
 
-  senecaDataEditorModule.directive('senecaDataEditor', ['senecaDataEditorAPI', function(senecaDataEditorAPI) {
+  senecaDataEditorModule.directive('senecaDataEditor', ['senecaDataEditorEntity', 'senecaDataEditorAPI', function(senecaDataEditorEntity, senecaDataEditorAPI) {
     var def = {
       restrict:'A',
       scope:{
         options:'@',
+        querystring:'='
       },
       link: function( scope, elem, attrs ){
         var params = scope.$eval(attrs.senecaDataEditor||'{}')||{}
-        // options.tags = _.extend(options.tags,tagx(params.tags||''))
-        console.log(options)
+        options.tags = _.extend(options.tags,tagx(params.tags||''))
 
         senecaDataEditorAPI.config(function(config){
           _.each(config.tags, function(tag){ options.tags[tag]=true })
+        })
+
+        scope.$watch('querystring',function(querystring){
+          senecaDataEditorEntity.setQueryString(querystring)
         })
       },
       templateUrl: prefix+"/_data_editor_template.html"

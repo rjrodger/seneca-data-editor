@@ -13,9 +13,14 @@
         field: <select ng-model="qfield" ng-options="f.name for f in fields"></select>
         =
         <input ng-model="qstring">
-        <br>
-        <button ng-click="search()" class="btn">Search</button>
-        <button ng-click="clear()" class="btn">Clear</button>
+
+        <br><br>
+
+        <div class="btn-group span12">
+          <button ng-click="search()" class="btn">Search</button>
+          <button ng-click="clear()" class="btn">Clear</button>
+          <button ng-click="close()" class="btn">Close</button>
+        </div>
       </div>
     </div>
 
