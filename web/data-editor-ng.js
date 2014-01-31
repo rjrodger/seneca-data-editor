@@ -95,13 +95,6 @@
         sb.push(name)
       }
 
-      //if( void 0 != arguments[0] ) sb.push(arguments[0]+'_');
-      //if( void 0 != arguments[1] ) sb.push(arguments[1]+'_');
-      //if( void 0 != arguments[2] ) sb.push(arguments[2]);
-      //sb.push( arguments[0]+'_' );
-      //sb.push( arguments[1]+'_' );
-      //sb.push( arguments[2] );
-
       return sb.join('')
     }
 
@@ -144,15 +137,15 @@
 
     function listfunc(kind,query,done){
       var qstr = 
-            '?skip='+query.skip$ +
-            '&limit='+query.limit$
+            '?skip$='+query.skip$ +
+            '&limit$='+query.limit$
 
       if(query.sort) {
-        qstr += '&sort='+query.sort
+        qstr += '&sort$='+query.sort
       }
 
       if(query.q) {
-        qstr += '&q='+query.q
+        qstr += '&q$='+query.q
       }
 
       qstr += qs(true)
@@ -237,13 +230,6 @@
 
           }
           else {
-            //},
-            //'sys_entity': function(kind,query,done) {
-            //$http({method: 'GET', url: prefix+'/entlist', cache: false}).
-            //$http({method: 'GET', url: prefix+'/rest/'+kind+qstr, cache: false}).
-            //success(function(data, status) {
-            //entlist = data.entlist
-
             entlist = data.list
             console.log('entlist',entlist)
 
@@ -668,7 +654,6 @@
 
   senecaDataEditorModule.service('senecaDataEditorAPI', ['$http',function($http){
     return {
-      // TODO: add entlist
       config: function(done){
         $http({method:'GET',url:prefix+'/config', cache:false})
           .success(function(out){

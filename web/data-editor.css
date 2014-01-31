@@ -493,3 +493,16 @@
     padding: 2px 4px;
     margin: 2px;
 } 
+
+
+.gridStyle {
+    height: 300px
+}
+
+.row {
+    margin-bottom: 20px;
+}
+
+.msg {
+    height: 30px;
+}
