@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2013 Richard Rodger, MIT License */
+/* Copyright (c) 2010-2014 Richard Rodger, MIT License */
 "use strict";
 
 
@@ -113,48 +113,6 @@ module.exports = function( options ) {
 
 
 
-/*
-  function cmd_entlist( args, done ) {
-    var accesslist = (args.user && args.user.perm && args.user.perm.entity) || []
-
-    var entlist = []
-
-    if( (args.user && args.user.admin) || options.admin.local ) {
-      accesslist = [{}]
-    }
-
-    seneca.util.recurse(
-      accesslist,
-      function(entry,next) {
-        var entcanon = _.pick( entry, 'zone', 'base', 'name' )
-        sysent.list$(entcanon, function(err, list){
-          if( err ) return next(err);
-          entlist = entlist.concat(list)
-          next()
-        })
-      },
-      function(err){
-        var perm = args.perm$ //args.user && args.user.perm
-
-        if( perm ) {
-          if( perm.entity ) { //&& _.isFunction(perm.entity.find) ) {
-            _.each(entlist, function(ent){
-              ent.perm = perm.entity.find(ent) || ent.perm
-            })
-          }
-          if( perm.own ) { //&& _.isFunction(perm.entity.find) ) {
-            _.each(entlist, function(ent){
-              ent.perm = perm.own.entity.find(ent) || ent.perm
-            })
-          }
-        }
-
-        done(err,{entlist:entlist})
-      }
-    )
-  }
- */
-
   function cmd_config( args, done ) {
     
     var user = args.user || {}
@@ -199,7 +157,7 @@ module.exports = function( options ) {
 
 
   var app = connect()
-  app.use(connect.static(__dirname+'/../web'))
+  app.use(connect.static(__dirname+'/web'))
 
 
 
@@ -281,6 +239,18 @@ module.exports = function( options ) {
 
 
   seneca.act({role:'web',use:service,plugin:'data-editor',config:{prefix:options.prefix}})
+
+  seneca.act({role:'util',note:true,cmd:'push',key:'admin/units',value:{
+    unit:'data-editor',
+    spec:{title:'Data Editor',ng:{module:'senecaDataEditorModule',directive:'seneca-data-editor'}},
+    content:[
+      {type:'js',file:__dirname+'/web/tagx.js'},
+      {type:'js',file:__dirname+'/web/ng-grid.js'},
+      {type:'js',file:__dirname+'/web/jquery.jsoneditor.js'},
+      {type:'js',file:__dirname+'/web/data-editor-ng.js'},
+      {type:'css',file:__dirname+'/web/data-editor.css'}
+    ]
+  }})
 
 
   return {

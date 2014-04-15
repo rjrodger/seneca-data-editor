@@ -2,7 +2,7 @@
   "name": "seneca-data-editor",
   "version": "0.1.4",
   "description": "Seneca data editor plugin",
-  "main": "lib/data-editor.js",
+  "main": "data-editor.js",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha test/data-editor.test.js"
   },
