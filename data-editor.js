@@ -191,7 +191,7 @@ module.exports = function( options ) {
   }
 
 
-  var service = seneca.http({
+  var service = {
     prefix:options.prefix,
     pin:{role:name,cmd:'*'},
     premap:checkperm,
@@ -200,14 +200,6 @@ module.exports = function( options ) {
       config:true
     },
     endware:function(req,res,next){
-      /*
-      var compprefix = seneca_prefix+options.prefix
-      if( 0 == req.url.indexOf(compprefix) ) {
-        req.url = req.url.substring(compprefix.length)
-        return app(req,res,next)
-      }
-       */
-
       if( 0 != req.url.indexOf(options.prefix) ) return next();
 
       req = _.clone(req)
@@ -235,7 +227,7 @@ module.exports = function( options ) {
         return app(req,res,next)
       }
     },
-  })
+  }
 
 
   seneca.act({role:'web',use:service,plugin:'data-editor',config:{prefix:options.prefix}})
