@@ -143,15 +143,20 @@ module.exports = function( options ) {
 
   function init( args, done ) {
     var seneca = this
-    /*
-    seneca.act('role:web,cmd:config,plugin:web',function(err,config){
-      if( err ) return done(err);
 
-      seneca_prefix = config.prefix
-      done()
-    })
-     */
-   done()
+    seneca.act({role:'util',note:true,cmd:'push',key:'admin/units',value:{
+      unit:'data-editor',
+      spec:{title:'Data Editor',ng:{module:'senecaDataEditorModule',directive:'seneca-data-editor'}},
+      content:[
+        {type:'js',file:__dirname+'/web/tagx.js'},
+        {type:'js',file:__dirname+'/web/ng-grid.js'},
+        {type:'js',file:__dirname+'/web/jquery.jsoneditor.js'},
+        {type:'js',file:__dirname+'/web/data-editor-ng.js'},
+        {type:'css',file:__dirname+'/web/data-editor.css'}
+      ]
+    }})
+
+    done()
   }
 
 
@@ -232,17 +237,6 @@ module.exports = function( options ) {
 
   seneca.act({role:'web',use:service,plugin:'data-editor',config:{prefix:options.prefix}})
 
-  seneca.act({role:'util',note:true,cmd:'push',key:'admin/units',value:{
-    unit:'data-editor',
-    spec:{title:'Data Editor',ng:{module:'senecaDataEditorModule',directive:'seneca-data-editor'}},
-    content:[
-      {type:'js',file:__dirname+'/web/tagx.js'},
-      {type:'js',file:__dirname+'/web/ng-grid.js'},
-      {type:'js',file:__dirname+'/web/jquery.jsoneditor.js'},
-      {type:'js',file:__dirname+'/web/data-editor-ng.js'},
-      {type:'css',file:__dirname+'/web/data-editor.css'}
-    ]
-  }})
 
 
   return {
