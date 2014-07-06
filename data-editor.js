@@ -154,7 +154,7 @@ module.exports = function( options ) {
         {type:'js',file:__dirname+'/web/data-editor-ng.js'},
         {type:'css',file:__dirname+'/web/data-editor.css'}
       ]
-    }})
+    },default$:{}})
 
     done()
   }

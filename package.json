@@ -1,6 +1,6 @@
 {
   "name": "seneca-data-editor",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Seneca data editor plugin",
   "main": "data-editor.js",
   "scripts": {
@@ -26,9 +26,9 @@
     "web"
   ],
   "dependencies": {
-    "underscore": "1.5.x",
-    "tagx": "0.1.x",
-    "connect": "2.12.x"
+    "underscore": "~1.6.0",
+    "tagx": "~0.1.1",
+    "connect": "~2.12.0"
   },
   "peerDependencies": {
     "seneca": "*",
@@ -36,15 +36,15 @@
     "seneca-perm": "*"
   },
   "devDependencies": {
-    "seneca": "0.5.x",
-    "seneca-user": "0.2.x",
-    "seneca-auth": "0.2.x",
-    "seneca-perm": "0.1.x",
-    "seneca-jsonrest-api": "0.2.x",
-    "connect": "2.12.x",
-    "express": "3.4.x",
-    "mocha": "1.17.x",
-    "gex": "0.1.x",
-    "chai": "1.8.x"
+    "seneca": "~0.5.17",
+    "seneca-user": "~0.2.8",
+    "seneca-auth": "~0.2.9",
+    "seneca-perm": "~0.1.2",
+    "seneca-jsonrest-api": "~0.2.1",
+    "connect": "~2.12.0",
+    "express": "~3.4.8",
+    "mocha": "~1.17.1",
+    "gex": "~0.1.4",
+    "chai": "~1.8.1"
   }
 }
