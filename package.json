@@ -1,6 +1,6 @@
 {
   "name": "seneca-data-editor",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Seneca data editor plugin",
   "main": "data-editor.js",
   "scripts": {
@@ -21,13 +21,13 @@
   "files": [
     "README.md",
     "LICENSE.txt",
-    "lib/data-editor.js",
+    "data-editor.js",
     "test/readme.js",
     "web"
   ],
   "dependencies": {
     "underscore": "~1.6.0",
-    "tagx": "~0.1.1",
+    "tagx": "~0.1.2",
     "connect": "~2.12.0"
   },
   "peerDependencies": {
