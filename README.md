@@ -63,3 +63,7 @@ node send-mail.js --seneca.log.print
 See the [nodemailer](http://www.nodemailer.com/) module for configuration options.
 
 -->
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/rjrodger/seneca-data-editor/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
