@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 Richard Rodger */
+/* Copyright (c) 2013-2015 Richard Rodger */
 "use strict";
 
 
@@ -6,7 +6,9 @@
 // http://localhost:3000/auth/login?username=a1&password=a1&redirect=true&win=/data-editor
 
 
-var express = require('express')
+var express      = require('express')
+var bodyParser   = require('body-parser')
+var cookieParser = require('cookie-parser')
 
 var seneca  = require('seneca')()
 seneca.use('mem-store',{web:{dump:true}})
@@ -16,18 +18,13 @@ seneca.use('perm',{entity:[{}]})
 seneca.use('..')
 
 
-seneca.ready( function(err) {
-  if(err) process.exit(console.error(err)&&1)
+seneca.ready( function() {
 
   var app = express()
-  app.use( express.cookieParser() )
-  app.use( express.query() )
-  app.use( express.bodyParser() )
-  app.use( express.methodOverride() )
-  app.use( express.json() )
+  app.use( cookieParser() )
+  app.use( bodyParser.json() )
 
   app.use( seneca.export('web') )
-
 
   app.listen( 3000 )
 

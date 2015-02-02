@@ -25,10 +25,9 @@ describe('data-editor', function() {
   
 
   it('happy', function( done ){
-    seneca()
+    seneca({log:'silent',errhandler:done})
       .use('..')
-      .ready( function(err,si){ 
-        assert.isNull(err)
+      .ready( function(){ 
 
         assert.equal('a,b,c', ''+tagx("a b c"))
 
@@ -38,19 +37,22 @@ describe('data-editor', function() {
 
 
   it('access', function( done ){
-    seneca()
+    seneca({log:'silent',errhandler:done})
       .use('..')
-      .ready( function(err,si){ 
-        assert.isNull(err)
+      .ready( function(err){ 
+        var si = this
 
-        si.act('role:util, cmd:define_sys_entity',{list:"-/-/a,-/-/b,-/A/t,-/A/u,-/B/v"},function(err){
-          if( err ) return done(err);
-
-          si.make$('sys/entity').list$({},function(err,list){
+        si.act(
+          'role:util, cmd:define_sys_entity',
+          {list:"-/-/a,-/-/b,-/A/t,-/A/u,-/B/v"},
+          function(err){
             if( err ) return done(err);
 
+            si.make$('sys/entity').list$({},function(err,list){
+              if( err ) return done(err);
 
-            assert.ok( gex('*=a;*=b;*=A;*=t;*=A;*=u;*=B;*=v;*').on(util.inspect(list)) )
+              assert.ok( gex('*=a;*=b;*=A;*=t;*=A;*=u;*=B;*=v;*')
+                         .on(util.inspect(list)) )
 
 /*
             var user = {access:{name:'a'}}

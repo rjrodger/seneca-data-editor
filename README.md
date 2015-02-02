@@ -15,9 +15,9 @@ See [seneca-mvp](http://github.com/rjrodger/seneca-mvp) for a usage example.
 If you're using this module, feel free to contact me on twitter if you
 have any questions! :) [@rjrodger](http://twitter.com/rjrodger)
 
-Current Version: 0.1.6
+Current Version: 0.2.0
 
-Tested on: Node 0.10.29, Seneca 0.5.18
+Tested on: Node 0.10.36, Seneca 0.6.1
 
 
 
@@ -53,13 +53,3 @@ For more logging options, see the [Seneca logging tutorial](http://senecajs.org/
 npm test
 ```
 
-Copy _sendconf.example.js_ and add real configuration values, and then send a mail with:
-
-```sh
-cd test
-node send-mail.js --seneca.log.print
-```
-
-See the [nodemailer](http://www.nodemailer.com/) module for configuration options.
-
--->

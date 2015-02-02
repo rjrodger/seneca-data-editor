@@ -1,13 +1,14 @@
-/* Copyright (c) 2010-2014 Richard Rodger, MIT License */
+/* Copyright (c) 2010-2015 Richard Rodger, MIT License */
 "use strict";
 
 
 var buffer  = require('buffer')
 var util    = require('util')
 
-var connect  = require('connect')
-var _        = require('underscore')
-var tagx     = require('tagx')
+var connect     = require('connect')
+var serveStatic = require('serve-static')
+var _           = require('lodash')
+var tagx        = require('tagx')
 
 
 var name = 'data-editor'
@@ -162,7 +163,7 @@ module.exports = function( options ) {
 
 
   var app = connect()
-  app.use(connect.static(__dirname+'/web'))
+  app.use(serveStatic(__dirname+'/web'))
 
 
 
