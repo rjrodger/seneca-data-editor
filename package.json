@@ -4,7 +4,8 @@
   "description": "Seneca data editor plugin",
   "main": "data-editor.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha test/data-editor.test.js"
+    "test": "./node_modules/mocha/bin/mocha test/data-editor.test.js",
+    "cover": "istanbul report text-summary lcov ; cat coverage/lcov.info | coveralls"
   },
   "repository": {
     "type": "git",
@@ -37,15 +38,17 @@
     "tagx": "~0.1.2"
   },
   "devDependencies": {
-    "seneca": "plugin",
-    "seneca-user": "~0.2.10",
-    "seneca-auth": "~0.4.0",
-    "seneca-perm": "~0.5.6",
-    "seneca-jsonrest-api": "~0.3.1",
+    "chai": "~3.4.1",
     "connect": "~3.4.0",
+    "coveralls": "^2.11.6",
     "express": "~3.4.8",
-    "mocha": "~2.3.4",
     "gex": "~0.2.0",
-    "chai": "~3.4.1"
+    "istanbul": "^0.4.1",
+    "mocha": "~2.3.4",
+    "seneca": "plugin",
+    "seneca-auth": "~0.4.0",
+    "seneca-jsonrest-api": "~0.3.1",
+    "seneca-perm": "~0.5.6",
+    "seneca-user": "~0.2.10"
   }
 }

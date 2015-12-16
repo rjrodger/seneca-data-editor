@@ -13,16 +13,7 @@ var assert  = require('chai').assert
 var gex  = require('gex')
 var tagx = require('tagx')
 
-
-
-
-
-
-
-
-
 describe('data-editor', function() {
-  
 
   it('happy', function( done ){
     seneca({log:'silent',errhandler:done})
@@ -34,7 +25,6 @@ describe('data-editor', function() {
         done()
       })
   })
-
 
   it('access', function( done ){
     seneca({log:'silent',errhandler:done})
