@@ -17,7 +17,7 @@ var name = 'data-editor'
 
 module.exports = function( options ) {
   var seneca  = this
-  var senutil = seneca.export('util')
+  var senutil = seneca.export('basic')
 
 
   options = seneca.util.deepextend({
@@ -145,7 +145,7 @@ module.exports = function( options ) {
   function init( args, done ) {
     var seneca = this
 
-    seneca.act({role:'util',note:true,cmd:'push',key:'admin/units',value:{
+    seneca.act({role:'basic',note:true,cmd:'push',key:'admin/units',value:{
       unit:'data-editor',
       spec:{title:'Data Editor',ng:{module:'senecaDataEditorModule',directive:'seneca-data-editor'}},
       content:[
