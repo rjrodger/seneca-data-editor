@@ -4,7 +4,9 @@
 # seneca-data-editor
 [![npm version][npm-badge]][npm-url]
 [![Build Status][travis-badge]][travis-url]
-[![Coverage Status][coveralls-badge]][coveralls-status]
+[![Coverage Status][coveralls-badge]][coveralls-url]
+[![Dependency Status][david-badge]][david-url]
+[![Gitter chat][gitter-badge]][gitter-url]
 
 
 This module can be used in a standalone fashion, but is most often
@@ -49,3 +51,7 @@ npm test
 [travis-url]: https://travis-ci.org/rjrodger/seneca-data-editor
 [coveralls-badge]:https://coveralls.io/repos/rjrodger/seneca-data-editor/badge.svg?branch=master&service=github
 [coveralls-url]: https://coveralls.io/github/rjrodger/seneca-data-editor?branch=master
+[david-badge]: https://david-dm.org/rjrodger/seneca-data-editor.svg
+[david-url]: https://david-dm.org/rjrodger/seneca-data-editor
+[gitter-badge]: https://badges.gitter.im/senecajs/seneca.png
+[gitter-url]: https://gitter.im/senecajs/seneca
